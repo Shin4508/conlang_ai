@@ -4,7 +4,7 @@ import os
 # Dataset published to Github: word list that frequently used in movie
 BASE_URL = "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/{}/{}_50k.txt"
 
-# 取得する言語のリスト
+# Language list
 langs = {
     "ja": ("japanese.txt", "ja"),
     "ru": ("russian.txt", "ru"),
