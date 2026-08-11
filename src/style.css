@@ -1,0 +1,89 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #121212;
+  color: #fff;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.display-area {
+  font-size: 24px;
+  padding: 15px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  border: 1px solid #333;
+  margin-bottom: 15px;
+  min-height: 40px;
+  word-break: break-all;
+  color: #00e676;
+}
+
+.keyboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.key-btn {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 10px 14px;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.key-btn:hover {
+  background: #3a3a3a;
+  border-color: #666;
+}
+
+.key-btn:active {
+  background: #555;
+  transform: scale(0.95);
+}
+
+.control-btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+}
+
+.btn-enter { background: #4CAF50; color: white; }
+.btn-clear { background: #f44336; color: white; }
+.btn-backspace { background: #ff9800; color: white; }
+
+.output-area {
+  background: #000;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 18px;
+  color: #64ffda;
+  min-height: 100px;
+}

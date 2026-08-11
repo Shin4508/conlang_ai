@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPA Conlang Generator</title>
+  <!-- CSSの読み込み -->
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+  <h1>🎙️ AI Conlang Generator</h1>
+
+  <!-- 入力ディスプレイ -->
+  <div id="input-display" class="display-area">/ </div>
+
+  <!-- 操作ボタン -->
+  <div class="control-btns">
+    <button id="btn-backspace" class="action-btn btn-backspace">⌫ 1文字削除</button>
+    <button id="btn-clear" class="action-btn btn-clear">C クリア</button>
+    <button id="btn-enter" class="action-btn btn-enter">⏎ Enter (生成開始)</button>
+  </div>
+
+  <!-- IPAキーボード -->
+  <div id="keyboard" class="keyboard-grid"></div>
+
+  <h3>生成された関連語:</h3>
+  <div id="output" class="output-area">入力してEnterを押してください...</div>
+
+  <!-- TypeScriptの読み込み (type="module" を忘れないこと) -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

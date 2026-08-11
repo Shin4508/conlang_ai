@@ -1,2 +1,20 @@
+# Node.js 依存関係（超重要：絶対にGitに含めない）
+node_modules/
+
+# OSやエディタの不要ファイル
+.DS_Store
+.vscode/
+.idea/
+
+# Pythonのキャッシュや仮想環境
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# ビルド成果物
+dist/
+build/
+
+# data系
 data/
-.DS_store
