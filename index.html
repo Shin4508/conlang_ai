@@ -2,10 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPA Conlang Generator</title>
-  <!-- CSSの読み込み -->
-  <link rel="stylesheet" href="/src/style.css">
+  <title>AI Conlang Generator & Explorer</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -14,20 +12,24 @@
   <!-- 入力ディスプレイ -->
   <div id="input-display" class="display-area">/ </div>
 
-  <!-- 操作ボタン -->
+  <!-- 操作ボタン群 -->
   <div class="control-btns">
     <button id="btn-backspace" class="action-btn btn-backspace">⌫ 1文字削除</button>
     <button id="btn-clear" class="action-btn btn-clear">C クリア</button>
-    <button id="btn-enter" class="action-btn btn-enter">⏎ Enter (生成開始)</button>
+    <button id="btn-single" class="action-btn btn-enter">⏎ 1単語生成</button>
+    <button id="btn-loop" class="action-btn btn-loop">🔄 100単語ループ探索</button>
   </div>
 
   <!-- IPAキーボード -->
   <div id="keyboard" class="keyboard-grid"></div>
 
-  <h3>生成された関連語:</h3>
-  <div id="output" class="output-area">入力してEnterを押してください...</div>
+  <!-- ステータス・進捗 -->
+  <div id="status-bar" class="status-bar">準備中...</div>
 
-  <!-- TypeScriptの読み込み (type="module" を忘れないこと) -->
-  <script type="module" src="/src/main.ts"></script>
+  <!-- 生成結果表示エリア -->
+  <h3>語彙ライブラリ (<span id="lib-count">0</span> 単語):</h3>
+  <div id="output" class="output-area">ボタンを押して探索を開始してください...</div>
+
+  <script type="module" src="/main.ts"></script>
 </body>
 </html>

@@ -87,3 +87,21 @@ body {
   color: #64ffda;
   min-height: 100px;
 }
+.btn-loop {
+  background: #9c27b0;
+  color: white;
+}
+
+.btn-loop:disabled, .btn-enter:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.status-bar {
+  background: #1a1a2e;
+  color: #e94560;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
