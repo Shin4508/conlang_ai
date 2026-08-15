@@ -1,20 +1,17 @@
-import * as ort from 'onnxruntime-web';
-
-ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
-
-export interface VocabData {
-  ipa2id: Record<string, number>;
-  id2ipa: Record<string, string>;
-  block_size: number;
+// ONNX Runtime Web の WASM パス設定
+if (window.ort) {
+  ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
 }
 
 export class ConlangGenerator {
-  private session: ort.InferenceSession | null = null;
-  private ipa2id: Record<string, number> = {};
-  private id2ipa: Record<string, string> = {};
-  private blockSize: number = 8;
+  constructor() {
+    this.session = null;
+    this.ipa2id = {};
+    this.id2ipa = {};
+    this.blockSize = 8;
+  }
 
-  async init(modelPath: string, vocabJson: VocabData): Promise<void> {
+  async init(modelPath, vocabJson) {
     this.ipa2id = vocabJson.ipa2id;
     this.id2ipa = vocabJson.id2ipa;
     this.blockSize = vocabJson.block_size;
@@ -24,8 +21,8 @@ export class ConlangGenerator {
     });
   }
 
-  private sampleToken(logits: Float32Array, temperature: number = 0.5): number {
-    const expProbs: number[] = [];
+  sampleToken(logits, temperature = 0.5) {
+    const expProbs = [];
     let sumExp = 0;
 
     for (let i = 0; i < logits.length; i++) {
@@ -42,16 +39,11 @@ export class ConlangGenerator {
     return expProbs.length - 1;
   }
 
-  // 1反復分の単語群を生成し、最少出現IPAを含む単語と新規単語リストを返す
-  async generateLoop(
-    inputText: string,
-    temperature: number = 0.5,
-    maxLen: number = 11
-  ): Promise<{ leastWord: string; newWords: string[] }> {
+  async generateLoop(inputText, temperature = 0.5, maxLen = 11) {
     if (!this.session) throw new Error("Model is not initialized");
 
     let newLineCount = 0;
-    const inputContext: number[] = [];
+    const inputContext = [];
     for (const char of inputText) {
       if (char in this.ipa2id) {
         inputContext.push(this.ipa2id[char]);
@@ -59,22 +51,22 @@ export class ConlangGenerator {
     }
     if (inputContext.length === 0) return { leastWord: "", newWords: [] };
 
-    const generatedIds: number[] = [];
+    const generatedIds = [];
 
     while (true) {
       const cond = inputContext.slice(-this.blockSize);
       const bigIntArray = new BigInt64Array(cond.map(n => BigInt(n)));
       const inputTensor = new ort.Tensor('int64', bigIntArray, [1, cond.length]);
 
-      const feeds: Record<string, ort.Tensor> = { input: inputTensor };
+      const feeds = { input: inputTensor };
       const results = await this.session.run(feeds);
 
-      const outputTensor = results.output as ort.Tensor;
-      const dims = outputTensor.dims as readonly number[];
+      const outputTensor = results.output;
+      const dims = outputTensor.dims;
       const seqLen = dims[1];
       const vocabSize = dims[2];
 
-      const data = outputTensor.data as Float32Array;
+      const data = outputTensor.data;
       const lastTokenLogits = data.slice((seqLen - 1) * vocabSize, seqLen * vocabSize);
 
       const nextId = this.sampleToken(lastTokenLogits, temperature);
@@ -97,15 +89,11 @@ export class ConlangGenerator {
     }
 
     const newWords = nextWordStr.split('\n').filter(w => w.trim().length > 0);
-
-    // 使われたIPA記号のユニーク一覧を取得
-    const usedIpaSet = new Set<string>(nextWordStr.split('').filter(c => c !== '\n' && c !== ' '));
-    const usedIpa = Array.from(usedIpaSet);
+    const usedIpa = Array.from(new Set(nextWordStr.split('').filter(c => c !== '\n' && c !== ' ')));
 
     let leastIpa = "";
     let leastCount = Infinity;
 
-    // 最も出現頻度が低いIPAを特定
     for (const ipa of usedIpa) {
       let ipaCount = 0;
       for (const word of newWords) {
@@ -119,7 +107,6 @@ export class ConlangGenerator {
       }
     }
 
-    // 最少IPAを含む単語を選択
     let leastWord = newWords[0] || "";
     for (const word of newWords) {
       if (word.includes(leastIpa)) {
@@ -130,18 +117,12 @@ export class ConlangGenerator {
 
     return {
       leastWord: leastWord.endsWith('\n') ? leastWord : leastWord + '\n',
-      newWords: newWords
+      newWords: newWords,
     };
   }
 
-  // 100回反復して語彙集を作成するループ（進捗コールバック付き）
-  async expandVocabulary(
-    initialPrompt: string,
-    iterations: number = 100,
-    temperature: number = 0.5,
-    onProgress?: (current: number, total: number, newlyAdded: string[], currentSeed: string) => void
-  ): Promise<string[]> {
-    const library: string[] = [];
+  async expandVocabulary(initialPrompt, iterations = 100, temperature = 0.5, onProgress = null) {
+    const library = [];
     let currentSeed = initialPrompt.endsWith('\n') ? initialPrompt : initialPrompt + '\n';
 
     for (let i = 0; i < iterations; i++) {

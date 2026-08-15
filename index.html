@@ -2,17 +2,18 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Conlang Generator & Explorer</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="./style.css">
+  <!-- CDN から ONNX Runtime を読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
 </head>
 <body>
 
   <h1>🎙️ AI Conlang Generator</h1>
 
-  <!-- 入力ディスプレイ -->
   <div id="input-display" class="display-area">/ </div>
 
-  <!-- 操作ボタン群 -->
   <div class="control-btns">
     <button id="btn-backspace" class="action-btn btn-backspace">⌫ 1文字削除</button>
     <button id="btn-clear" class="action-btn btn-clear">C クリア</button>
@@ -20,16 +21,14 @@
     <button id="btn-loop" class="action-btn btn-loop">🔄 100単語ループ探索</button>
   </div>
 
-  <!-- IPAキーボード -->
   <div id="keyboard" class="keyboard-grid"></div>
 
-  <!-- ステータス・進捗 -->
-  <div id="status-bar" class="status-bar">準備中...</div>
+  <div id="status-bar" class="status-bar">辞書・モデルを読み込み中...</div>
 
-  <!-- 生成結果表示エリア -->
   <h3>語彙ライブラリ (<span id="lib-count">0</span> 単語):</h3>
   <div id="output" class="output-area">ボタンを押して探索を開始してください...</div>
 
-  <script type="module" src="/main.ts"></script>
+  <!-- ES Modules として main.js を実行 -->
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
