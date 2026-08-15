@@ -14,9 +14,9 @@ body {
   border-radius: 8px;
   border: 1px solid #333;
   margin-bottom: 15px;
-  min-height: 40px;
-  word-break: break-all;
   color: #00e676;
+  min-height: 35px;
+  word-break: break-all;
 }
 
 .keyboard-grid {
@@ -38,17 +38,11 @@ body {
   font-size: 18px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: 0.1s;
 }
 
 .key-btn:hover {
   background: #3a3a3a;
-  border-color: #666;
-}
-
-.key-btn:active {
-  background: #555;
-  transform: scale(0.95);
 }
 
 .control-btns {
@@ -60,39 +54,19 @@ body {
 .action-btn {
   flex: 1;
   padding: 12px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.action-btn:hover {
-  opacity: 0.9;
 }
 
 .btn-enter { background: #4CAF50; color: white; }
+.btn-loop { background: #9c27b0; color: white; }
 .btn-clear { background: #f44336; color: white; }
 .btn-backspace { background: #ff9800; color: white; }
 
-.output-area {
-  background: #000;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  white-space: pre-wrap;
-  font-family: monospace;
-  font-size: 18px;
-  color: #64ffda;
-  min-height: 100px;
-}
-.btn-loop {
-  background: #9c27b0;
-  color: white;
-}
-
-.btn-loop:disabled, .btn-enter:disabled {
+.action-btn:disabled {
   background: #555;
   cursor: not-allowed;
 }
@@ -104,4 +78,18 @@ body {
   border-radius: 6px;
   margin-bottom: 15px;
   font-weight: bold;
+}
+
+.output-area {
+  background: #000;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  font-family: monospace;
+  font-size: 18px;
+  color: #64ffda;
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
 }
