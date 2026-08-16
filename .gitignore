@@ -2,8 +2,7 @@
 node_modules/
 
 # OSやエディタの不要ファイル
-.DS_Store
-.vscode/
+.DS_Store/
 .idea/
 
 # Pythonのキャッシュや仮想環境
