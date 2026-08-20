@@ -102,9 +102,8 @@ generate_mixed({
 
 Mixture values are normalized automatically, so they may be given as proportions or arbitrary positive weights. Increasing `temperature` makes sampling more varied; decreasing it makes sampling more conservative. Generation begins with `<BOS>`, stops at `<EOS>` or `max_len`, and prevents `<PAD>` and `<BOS>` from being sampled.
 
-## Limitations
-
-- The output is IPA only; the model does not generate an orthography, definitions, or grammar.
-- The corpora are sampled uniformly during training rather than split into training and validation sets.
-- No evaluation metric or reproducible random seed is defined in the notebook.
-- Generated forms may resemble source words because the model learns directly from the supplied lists.
+## Current language
+Arabic  
+Russian  
+Finnish  
+Hungarian
