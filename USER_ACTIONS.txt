@@ -1,0 +1,38 @@
+DECISIONS AND MATERIALS NEEDED FROM YOU
+
+You can run the Python pronunciation designer now; these decisions are for the
+next stage. Reply here or fill in this file when convenient.
+
+1. Describe the first language you want to build.
+   Who speaks it, in what setting, and what should it sound/feel like?
+   Give 5-10 invented example words or describe sounds you like and dislike.
+   Film/game references are useful for direction; choose your own sound rules.
+
+2. Identify the performers and audience.
+   What languages do the actors speak? Which sounds should be easy to pronounce?
+   Do you need human recordings, synthesized previews, or just IPA and spelling?
+
+3. Choose pronunciation conventions.
+   Review profiles/example.json: allowed sounds, syllable shapes, word lengths,
+   stress, and spellings. The current choices are illustrative defaults.
+   A pronunciation specialist should review these before dialogue recording.
+
+4. Supply an initial vocabulary or short script.
+   Start with 20-50 meanings, names, or lines. Indicate whether grammar and
+   translation are in scope or whether you only need naming/pronunciation tools.
+
+5. Identify the sources of your data.
+   Record where the JLPT CSVs, word lists, Polish TSVs, ONNX model, and generated
+   word list came from, plus any licenses/permissions for your intended use.
+   The downloader contains a FrequencyWords URL; provenance for the actual local
+   copies and model training has not been established from the files alone.
+
+6. Review flagged pronunciations before retraining.
+   reports/data_audit.json identifies suspected source-script contamination.
+   Arabic inputs and Japanese readings need language-aware review; do not just
+   delete unfamiliar symbols from the model vocabulary. Correct source readings,
+   regenerate clean IPA, and retrain/re-export matching model and vocabulary.
+
+7. Choose the next interface.
+   Is the priority a desktop tool, browser tool, game-engine export, or a Python
+   workflow? The current working baseline is a Python CLI with CSV output.

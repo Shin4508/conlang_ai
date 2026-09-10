@@ -1,48 +1,39 @@
+"""Explicitly download frequency word lists. Importing this module performs no I/O."""
+import argparse
+from pathlib import Path
 import urllib.request
-import os
 
-# Dataset published to Github: word list that frequently used in movie
-BASE_URL = "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/{}/{}_50k.txt"
+ROOT = Path(__file__).resolve().parents[1]
+BASE_URL = 'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/{0}/{0}_50k.txt'
 
-# Language list
-langs = {
-    "ja": ("japanese.txt", "ja"),
-    "ru": ("russian.txt", "ru"),
-    "ar": ("arabic.txt", "ar"),
-    "fi": ("finnish.txt", "fi"),
-    "hu": ("hungarian.txt", "hu"),
-}
 
-os.makedirs("data/raw", exist_ok=True)
-
-print("🌍 世界5言語の頻出単語リスト（辞書）をダウンロード開始...\n")
-
-for lang_code, (filename, gh_code) in langs.items():
-    url = BASE_URL.format(gh_code, gh_code)
-    output_path = f"data/raw/{filename}"
-    print(f"📥 {filename} を取得中...")
-
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--languages', nargs='+', choices=['ja', 'ru', 'ar', 'fi', 'hu'], default=['ru', 'ar', 'fi', 'hu'])
+    parser.add_argument('--output-dir', type=Path, default=ROOT / 'data/raw')
+    parser.add_argument('--limit', type=int, default=5000)
+    parser.add_argument('--overwrite', action='store_true')
+    args = parser.parse_args()
+    if args.limit < 1:
+        parser.error('--limit must be positive')
     try:
-        # サーバーに弾かれないようにユーザーエージェントを偽装
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req) as response:
-            content = response.read().decode("utf-8").splitlines()
+        pending = {}
+        for lang in args.languages:
+            path = args.output_dir / f'{lang}.txt'
+            if path.exists() and not args.overwrite:
+                raise ValueError(f'{path} exists; use --overwrite to replace it')
+            with urllib.request.urlopen(BASE_URL.format(lang), timeout=30) as response:
+                words = [line.rsplit(maxsplit=1)[0] for line in response.read().decode('utf-8').splitlines() if line.strip()][:args.limit]
+            if not words:
+                raise ValueError(f'Empty download for {lang}')
+            pending[path] = '\n'.join(words) + '\n'
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        for path, content in pending.items():
+            path.write_text(content, encoding='utf-8')
+            print(f'Saved {path}')
+    except (OSError, ValueError) as exc:
+        parser.exit(1, f'Error: {exc}\n')
 
-        # 各行は "単語 頻度" の形式になっているので、単語だけを抽出
-        # まずは各言語、最も濃厚な上位5000単語を抽出
-        words = []
-        for line in content[:5000]:
-            parts = line.split()
-            if parts:
-                words.append(parts[0])
 
-        # ファイルに保存
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(words))
-
-        print(f"  ✅ {len(words)}単語を保存しました！")
-
-    except Exception as e:
-        print(f"  ❌ エラーが発生しました: {e}")
-
-print("\n🎉 全ての辞書データの準備が完了しました！")
+if __name__ == '__main__':
+    main()

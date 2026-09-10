@@ -1,109 +1,106 @@
-# IPA Conlang Generator
+# Fictional-language pronunciation tools
 
-An experiment in generating invented words by learning and blending the sound patterns of Arabic, Finnish, Hungarian, and Russian.
+Python tools for designing consistent invented pronunciations for film and games.
+The project includes a rule-based pronunciation designer, an experimental ONNX
+word generator, source word lists, and Transformer training notebooks.
 
-The project converts source-language word lists to the International Phonetic Alphabet (IPA), trains a language-conditioned character-level Transformer, and samples either from one language or from a weighted mixture of languages. The generated strings are pronunciations rather than words with assigned spelling or meaning.
+## Start here: design a pronunciation system
 
-## How it works
-
-The workflow in [`model_v2.ipynb`](model_v2.ipynb) is:
-
-1. Read one word per line from each raw corpus.
-2. Remove URLs and digits, then transliterate each entry to IPA with Epitran.
-3. Build a character vocabulary from the combined IPA data, plus `<PAD>`, `<BOS>`, and `<EOS>` tokens.
-4. Encode every pronunciation as a next-character prediction sample.
-5. Train a causal Transformer conditioned on the source language.
-6. Generate a word from one language embedding or a normalized blend of several language embeddings.
-
-Because language embeddings can be mixed before generation, the model can sample pronunciations that lie between the learned phonetic patterns of its training languages.
-
-## Data
-
-The model uses the following files from `data/raw/`:
-
-| Code | Language | File | Entries |
-| --- | --- | --- | ---: |
-| `ar` | Arabic | `ar.txt` | 5,000 |
-| `fi` | Finnish | `fi.txt` | 5,000 |
-| `hu` | Hungarian | `hu.txt` | 5,000 |
-| `ru` | Russian | `ru.txt` | 5,000 |
-
-Each file is UTF-8 text with one entry per line. `data/raw/ja.txt` is not used by the v2 notebook or described here.
-
-## Model
-
-`CharTransformer` is a compact decoder-style language model built from PyTorch's Transformer encoder components with a causal attention mask.
-
-| Setting | Value |
-| --- | ---: |
-| Context length | 24 IPA characters |
-| Embedding size | 64 |
-| Attention heads | 4 |
-| Transformer layers | 2 |
-| Feed-forward size | 128 |
-| Batch size | 32 |
-| Optimizer | AdamW |
-| Learning rate | `1e-3` |
-| Training iterations | 3,000 |
-
-Token, position, and language embeddings are added together before the Transformer. Training uses cross-entropy loss for next-character prediction and ignores padding tokens.
-
-## Requirements
-
-- Python 3
-- Jupyter Notebook or JupyterLab
-- PyTorch
-- Epitran
-
-Install the Python dependencies:
+Requires Python 3.10 or newer; no extra packages needed:
 
 ```bash
-python -m pip install jupyter torch epitran
+python3 python/pronunciation.py --count 20 --seed 42
+python3 python/pronunciation.py --count 50 --output reports/my_lexicon.csv
 ```
 
-## Running the notebook
+Edit `profiles/example.json` to define:
 
-Open `model_v2.ipynb` and run its cells in order:
+- Consonants and vowels, each mapped from an IPA sound to its spelling.
+- Syllable templates: C means consonant, V means vowel. Repeated templates increase their sampling frequency.
+- Minimum and maximum syllable counts.
+- Initial, penultimate, final, or no stress.
+- Forbidden IPA sequences, checked across syllable boundaries too.
+
+The CSV contains spelling, IPA, syllable breaks, and blank meaning/actor-notes
+fields. A fixed seed reproduces output. Generation rejects duplicate spellings
+and pronunciations within a batch and stops with an error if it cannot fill the
+requested count. It does not check novelty against real languages or previous
+exports. IPA dots mark syllable boundaries; ˈ marks primary stress.
+
+`reports/example_lexicon.csv` contains 50 example candidates. The example profile
+is a starting point, not a recreation of any existing fictional language.
+There is no audio synthesis, grammar, automatic translation, or actor recording
+interface yet. Spellings concatenate the configured mappings; they are not an
+English pronunciation guide or guaranteed to be uniquely decodable.
+
+## Run the existing learned model in Python
 
 ```bash
-jupyter notebook model_v2.ipynb
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-model.txt
+.venv/bin/python python/model.py --count 20 --seed 42
 ```
 
-The notebook currently defines its inputs as `ar.txt`, `fi.txt`, `hu.txt`, and `ru.txt`. Before running the data-loading cell from the repository root, change those values to:
+This uses `conlang_model.onnx` and its matching `vocab.json`. Prompts must use the
+existing vocabulary. Sampling is numerically stable and bounded by `--max-tokens`.
+The model proposes character strings without enforcing the pronunciation profile;
+review its output. Its vocabulary contains suspected unconverted source-script
+characters. Do not change token IDs without re-exporting the matching model.
 
-```python
-lang_files = {
-    "ar": "data/raw/ar.txt",
-    "fi": "data/raw/fi.txt",
-    "hu": "data/raw/hu.txt",
-    "ru": "data/raw/ru.txt",
-}
+The old `python/model.py` ran training immediately and contained unbounded
+sampling loops. It is now an inference CLI; the training experiments remain in
+`model.ipynb` and `model_v2.ipynb`. The browser prototype remains available via
+`python3 -m http.server 8000`, then `http://localhost:8000`. It loads ONNX Runtime
+from a CDN and needs internet access.
+
+## Inspect and prepare data
+
+```bash
+python3 python/audit_data.py --output reports/data_audit.json
+python3 python/get_ja_data.py
 ```
 
-Training happens in memory. The notebook does not save a checkpoint, so the generation cells must be run in the same session after training.
+The Japanese extractor reads all five `data/n1.csv` through `data/n5.csv` files,
+uses the reading column, and writes `data/raw/ja_readings.txt`, preserving the
+existing `ja.txt`. Review annotations and alternative readings before using it
+as a Japanese source list. The shared converter expects `ja.txt`; put a reviewed
+copy in a separate raw directory and pass `--raw-dir` for Japanese conversion.
 
-## Generating pronunciations
+Optional transliteration and training dependencies:
 
-Generate from one learned language profile:
-
-```python
-generate_word("fi", temperature=0.8, max_len=20)
+```bash
+.venv/bin/python -m pip install -r requirements-training.txt
+.venv/bin/python python/preprocess.py --languages ar fi hu ru
+.venv/bin/jupyter notebook model_v2.ipynb
 ```
 
-Generate from a blend:
+Run notebooks from the repository root. Preprocessing retains Unicode combining
+marks, writes one word per line to per-language IPA files and a combined file,
+and reports conversion failures instead of silently skipping them. It refuses
+suspected unconverted script characters. This is a contamination check, not a
+complete IPA validator. Existing dirty sources can therefore stop conversion
+until reviewed. Epitran language support and conversion accuracy need validation
+for each selected language, especially Japanese readings and Arabic vowels.
 
-```python
-generate_mixed({
-    "ar": 0.50,
-    "fi": 0.25,
-    "ru": 0.25,
-})
+`get_data.py` downloads only when explicitly run, uses consistent language-code
+filenames, and refuses replacement unless `--overwrite` is given. No download is
+needed for the local data already present. Local `data/` is gitignored, so a fresh
+checkout does not include those files.
+
+The v2 notebook blends Arabic, Finnish, Hungarian, and Russian language embeddings.
+It is experimental: it has no held-out evaluation or saved checkpoint/export
+pipeline. Its language-conditioned architecture is distinct from the existing
+browser model. Embedding weights are not guaranteed percentages of audible
+features. Notebook path, EOS truncation, and invalid sampling-weight issues have
+been fixed; full training still needs evaluation.
+
+## Validation and project notes
+
+```bash
+python3 -m unittest discover -s tests -v
+node --test tests/generator.test.mjs
 ```
 
-Mixture values are normalized automatically, so they may be given as proportions or arbitrary positive weights. Increasing `temperature` makes sampling more varied; decreasing it makes sampling more conservative. Generation begins with `<BOS>`, stops at `<EOS>` or `max_len`, and prevents `<PAD>` and `<BOS>` from being sampled.
-
-## Current language
-Arabic  
-Russian  
-Finnish  
-Hungarian
+See `reports/PROJECT_ANALYSIS.txt` for findings and `USER_ACTIONS.txt` for creative
+choices and source materials needed next. Source corpora and the existing model
+have been preserved.

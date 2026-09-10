@@ -1,82 +1,65 @@
-import os
-import epitran
+"""Convert raw word lists to IPA while retaining language labels and IPA marks."""
+import argparse
+from pathlib import Path
 import re
+import unicodedata
 
-print("Epitran loading")
-converters = {
-    "ja": epitran.Epitran("jpn-Jpan"),
-    "ru": epitran.Epitran("rus-Cyrl"),
-    "ar": epitran.Epitran("ara-Arab"),
-    "fi": epitran.Epitran("fin-Latn"),
-    "hu": epitran.Epitran("hun-Latn"),
-}
+ROOT = Path(__file__).resolve().parents[1]
+LANGUAGES = {'ar': 'ara-Arab', 'fi': 'fin-Latn', 'hu': 'hun-Latn', 'ru': 'rus-Cyrl', 'ja': 'jpn-Jpan'}
 
 
 def clean_text(text):
-    text = re.sub(r"https?://\S+|www\.\S+", "", text)
-    text = re.sub(r"\d+", "", text)
-    text = re.sub(r"[^\w\s\.,\?!/]", "", text)
-    return text
+    text = re.sub(r'https?://\S+|www\.\S+', '', unicodedata.normalize('NFC', text))
+    # Reject digits rather than turning an alphanumeric entry into a different word.
+    if any(c.isdigit() for c in text):
+        return ''
+    return ''.join(c for c in text if unicodedata.category(c)[0] in 'LM' or c.isspace() or c in "'-").strip()
+
+
+def suspicious_characters(text):
+    """Conservative contamination check, not a complete IPA validator."""
+    return sorted({c for c in text if any(s in unicodedata.name(c, '') for s in
+                  ('ARABIC', 'CYRILLIC', 'HIRAGANA', 'KATAKANA', 'CJK', 'DIGIT'))})
 
 
 def convert_to_ipa(file_path, converter):
-    if not os.path.exists(file_path):
-        print(f"[警告] ファイルが見つかりません: {file_path}")
-        return []
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    ipa_lines = []
-    for line in lines:
-        cleaned = clean_text(line)
-        words = cleaned.strip().split()
-        if not words:
+    result = []
+    for number, line in enumerate(Path(file_path).read_text(encoding='utf-8').splitlines(), 1):
+        word = clean_text(line)
+        if not word:
             continue
-
-        ipa_words = []
-        for word in words:
-            try:
-                ipa_word = converter.transliterate(word)
-                ipa_word = clean_text(ipa_word)
-                if ipa_word:
-                    ipa_words.append(ipa_word)
-            except Exception:
-                continue
-
-        if ipa_words:
-            ipa_lines.append(" / ".join(ipa_words))
-
-    return ipa_lines
+        try:
+            ipa = unicodedata.normalize('NFC', converter.transliterate(word).strip())
+        except Exception as exc:
+            raise ValueError(f'{file_path}:{number}: conversion failed for {word!r}: {exc}') from exc
+        if not ipa:
+            raise ValueError(f'{file_path}:{number}: conversion returned no pronunciation')
+        if suspicious_characters(ipa):
+            raise ValueError(f'{file_path}:{number}: unconverted characters in {ipa!r}; review this source entry')
+        result.extend(ipa.split())
+    if not result:
+        raise ValueError(f'No pronunciations in {file_path}')
+    return list(dict.fromkeys(result))
 
 
-def main():
-    RAW_DIR = "data/raw"
-    PROCESSED_DIR = "data/processed"
-
-    os.makedirs(PROCESSED_DIR, exist_ok=True)
-    lang_files = {
-        "ja": "ja.txt",
-        "ru": "ru.txt",
-        "ar": "ar.txt",
-        "fi": "fi.txt",
-        "hu": "hu.txt",
-    }
-
-    all_dataset_lines = []
-
-    for lang, file_name in lang_files.items():
-        file_path = os.path.join(RAW_DIR, file_name)
-        ipa_lines = convert_to_ipa(file_path, converters[lang])
-
-        all_dataset_lines.extend(ipa_lines)
-
-    output_path = os.path.join(PROCESSED_DIR, "mixed_ipa_corpus.txt")
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(all_dataset_lines))
-
-    print(f"🎉 前処理完了！ 学習データがここに保存されました: {output_path}")
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--languages', nargs='+', choices=LANGUAGES, default=['ar', 'fi', 'hu', 'ru'])
+    parser.add_argument('--raw-dir', type=Path, default=ROOT / 'data/raw')
+    parser.add_argument('--output-dir', type=Path, default=ROOT / 'data/processed')
+    args = parser.parse_args(argv)
+    try:
+        import epitran
+        # Finish all conversions before replacing any output files.
+        corpora = {lang: convert_to_ipa(args.raw_dir / f'{lang}.txt', epitran.Epitran(LANGUAGES[lang])) for lang in args.languages}
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        for lang, words in corpora.items():
+            (args.output_dir / f'ipa_{lang}.txt').write_text('\n'.join(words) + '\n', encoding='utf-8')
+            print(f'{lang}: {len(words)} unique pronunciations')
+        (args.output_dir / 'mixed_ipa_corpus.txt').write_text('\n'.join(w for words in corpora.values() for w in words) + '\n', encoding='utf-8')
+    except (ImportError, OSError, ValueError) as exc:
+        parser.exit(1, f'Error: {exc}\nInstall Epitran for conversion; review source entries if conversion fails.\n')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

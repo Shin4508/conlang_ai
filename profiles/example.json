@@ -1,0 +1,9 @@
+{
+  "name": "Example production language",
+  "consonants": {"p": "p", "t": "t", "k": "k", "m": "m", "n": "n", "s": "s", "ʃ": "sh", "l": "l", "ɾ": "r"},
+  "vowels": {"a": "a", "e": "e", "i": "i", "o": "o", "u": "u"},
+  "syllables": ["CV", "CV", "CVC"],
+  "syllable_count": [2, 3],
+  "stress": "penultimate",
+  "forbidden_sequences": ["ʃʃ"]
+}

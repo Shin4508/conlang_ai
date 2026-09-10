@@ -1,0 +1,62 @@
+PROJECT ANALYSIS
+
+Purpose
+The existing work is an IPA-like word-generation experiment. A production
+pronunciation system also needs explicit sound rules, consistent spellings,
+syllable/stress conventions, a reviewed lexicon, and performer guidance.
+
+Local data findings (before changes; see data_audit.json)
+- Arabic, Finnish, Hungarian, Russian: 5,000 raw entries each.
+- Japanese: 7,413 raw entries, 7,212 distinct entries.
+- Five JLPT CSVs have expression, reading, meaning, tags, guid columns.
+  The previous extractor omitted n5 and selected expression rather than reading.
+  n4 contains two missing readings.
+- Mixed processed corpus: 27,450 entries; 1,578 duplicate entries and 1,564
+  entries with suspected unconverted Arabic/Cyrillic characters.
+- generated_10k.txt: 10,000 lines, two blank lines, 8,539 unique nonblank entries,
+  1,459 duplicate nonblank entries; 14 entries contain suspected source script.
+- vocab.json: 77 character tokens, context length 8, valid forward/reverse ID
+  mapping, but suspected source-script leftovers and punctuation are present.
+- Polish TSVs are sentence/entity-category data: 15,310 training, 1,789 dev,
+  2,018 test records. They contain no pronunciation column and are not consumed
+  by the existing scripts. They are not ready-made pronunciation training data.
+
+Code findings and changes
+- Replaced import-time downloads and Japanese extraction with explicit CLIs.
+- Unified preprocessing filenames and project-root defaults; lazy-load Epitran.
+- Preserve IPA combining marks and fail visibly on conversion problems.
+  Keep language-specific output rather than only a mixed corpus.
+- Replaced the standalone import-time training script with an ONNX inference
+  CLI using the existing model. Original training experiments remain in notebooks.
+- Bound Python/browser sampling and use max-subtracted softmax; reject invalid
+  temperatures and unknown prompt symbols. Browser output splits all whitespace.
+- Fixed v2 notebook source paths, truncation losing EOS, small-dataset batching,
+  invalid mixture weights, and training mode after generation. Cleared stale
+  notebook outputs so old results are not presented as newly verified results.
+- Added a standard-library pronunciation designer with configurable inventory,
+  syllables, stress, spellings, forbidden sequences, seeded generation, and CSV.
+- Added a repeatable audit CLI, example lexicon, and regression tests.
+
+Limits and next engineering work
+- The rule-based designer and learned model are separate workflows; the ONNX
+  model does not enforce the new sound profile or support language blending.
+- No model retraining or source-corpus correction has been performed.
+- The notebooks need deduplicated train/validation splits, held-out loss and
+  pronunciation review, checkpoint saving, and a matching export pipeline.
+- Unicode character tokens can split affricates and combining sequences. A
+  reviewed phoneme inventory/tokenizer is needed for phoneme-level modeling.
+- Generated words have no assigned meaning or grammar and are not proven novel.
+- Audio, actor feedback, persistent lexicon editing, and project/version management
+  remain future product work. Existing raw data, generated_10k.txt, Polish TSVs,
+  and model/vocabulary files have not been overwritten.
+
+Validation performed
+- Eight standard-library Python regression tests passed.
+- Two Node tests passed for stable softmax, invalid input, and bounded sampling.
+- Python modules compile; edited notebook code cells parse successfully.
+- Japanese extraction ran against all five real CSVs: 7,202 unique readings,
+  written to a temporary file without replacing the original Japanese data.
+- Existing ONNX model generated five words successfully using NumPy 2.5.3 and
+  ONNX Runtime 1.30.0 installed in the local .venv.
+- Full notebook training and real Epitran conversion were not run. The browser
+  UI was not tested interactively; its generator was tested with a mock model.

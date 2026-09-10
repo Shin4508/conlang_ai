@@ -1,0 +1,168 @@
+{
+  "data/processed/mixed_ipa_corpus.txt": {
+    "lines": 27450,
+    "blank_lines": 0,
+    "unique_entries": 25872,
+    "duplicate_entries": 1578,
+    "punctuation_only_entries": 0,
+    "entries_with_suspected_unconverted_script": 1564,
+    "suspected_characters": [
+      "ћ",
+      "ء",
+      "ة",
+      "ـ",
+      "ى",
+      "ٓ",
+      "ٔ",
+      "ٕ",
+      "ٹ",
+      "ھ"
+    ]
+  },
+  "data/raw/ar.txt": {
+    "lines": 5000,
+    "blank_lines": 0,
+    "unique_entries": 5000,
+    "duplicate_entries": 0,
+    "punctuation_only_entries": 7
+  },
+  "data/raw/fi.txt": {
+    "lines": 5000,
+    "blank_lines": 0,
+    "unique_entries": 5000,
+    "duplicate_entries": 0,
+    "punctuation_only_entries": 0
+  },
+  "data/raw/hu.txt": {
+    "lines": 5000,
+    "blank_lines": 0,
+    "unique_entries": 5000,
+    "duplicate_entries": 0,
+    "punctuation_only_entries": 0
+  },
+  "data/raw/ja.txt": {
+    "lines": 7413,
+    "blank_lines": 0,
+    "unique_entries": 7212,
+    "duplicate_entries": 201,
+    "punctuation_only_entries": 1
+  },
+  "data/raw/ru.txt": {
+    "lines": 5000,
+    "blank_lines": 0,
+    "unique_entries": 5000,
+    "duplicate_entries": 0,
+    "punctuation_only_entries": 0
+  },
+  "generated_10k.txt": {
+    "lines": 10000,
+    "blank_lines": 2,
+    "unique_entries": 8539,
+    "duplicate_entries": 1459,
+    "punctuation_only_entries": 0,
+    "entries_with_suspected_unconverted_script": 14,
+    "suspected_characters": [
+      "ء",
+      "ة",
+      "ـ",
+      "ى",
+      "ً",
+      "ِ",
+      "ّ",
+      "ٔ",
+      "ٕ"
+    ]
+  },
+  "data/n1.csv": {
+    "records": 2699,
+    "columns": [
+      "expression",
+      "reading",
+      "meaning",
+      "tags",
+      "guid"
+    ],
+    "missing_readings": 0
+  },
+  "data/n2.csv": {
+    "records": 1906,
+    "columns": [
+      "expression",
+      "reading",
+      "meaning",
+      "tags",
+      "guid"
+    ],
+    "missing_readings": 0
+  },
+  "data/n3.csv": {
+    "records": 2140,
+    "columns": [
+      "expression",
+      "reading",
+      "meaning",
+      "tags",
+      "guid"
+    ],
+    "missing_readings": 0
+  },
+  "data/n4.csv": {
+    "records": 668,
+    "columns": [
+      "expression",
+      "reading",
+      "meaning",
+      "tags",
+      "guid"
+    ],
+    "missing_readings": 2
+  },
+  "data/n5.csv": {
+    "records": 718,
+    "columns": [
+      "expression",
+      "reading",
+      "meaning",
+      "tags",
+      "guid"
+    ],
+    "missing_readings": 0
+  },
+  "klej_nkjp-ner/dev.tsv": {
+    "records": 1789,
+    "columns": [
+      "sentence",
+      "target"
+    ]
+  },
+  "klej_nkjp-ner/test_features.tsv": {
+    "records": 2018,
+    "columns": [
+      "sentence"
+    ]
+  },
+  "klej_nkjp-ner/train.tsv": {
+    "records": 15310,
+    "columns": [
+      "sentence",
+      "target"
+    ]
+  },
+  "vocab.json": {
+    "tokens": 77,
+    "context_length": 8,
+    "suspected_characters": [
+      "ћ",
+      "ء",
+      "ة",
+      "ـ",
+      "ى",
+      "ٓ",
+      "ٔ",
+      "ٕ",
+      "ٹ",
+      "ھ"
+    ],
+    "round_trip_valid": true
+  }
+}

@@ -1,18 +1,37 @@
-import os
-import pandas as pd
+"""Extract Japanese readings from all five local JLPT CSV files, without pandas."""
+import argparse
+import csv
+from pathlib import Path
 
-# 修正3: ループの外でファイルを開く（テキストデータなので文字化け防止にutf-8を指定）
-with open("data/raw/ja.txt", "w", encoding="utf-8") as f:
-    # 修正1: 4ではなくrange(4)にする
-    for i in range(4):
-        filename = f"n{i + 1}.csv"
-        path = os.path.join("data", filename)
+ROOT = Path(__file__).resolve().parents[1]
 
-        df = pd.read_csv(path)
 
-        # 修正2: 1番左の列（0列目）を取得する正しい書き方
-        df_word = df["expression"]
+def extract_readings(paths):
+    words = []
+    for path in paths:
+        with Path(path).open(encoding='utf-8-sig', newline='') as f:
+            reader = csv.DictReader(f)
+            if 'reading' not in (reader.fieldnames or []):
+                raise ValueError(f'{path}: missing reading column')
+            words.extend(row['reading'].strip() for row in reader if row.get('reading', '').strip())
+    if not words:
+        raise ValueError('No readings found')
+    return list(dict.fromkeys(words))
 
-        # 修正4: pandasのSeriesを直接writeできないので、文字列に変換して書き込む
-        text_data = "\n".join(df_word.astype(str))
-        f.write(text_data + "\n")
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--data-dir', type=Path, default=ROOT / 'data')
+    parser.add_argument('--output', type=Path, default=ROOT / 'data/raw/ja_readings.txt')
+    args = parser.parse_args()
+    try:
+        words = extract_readings([args.data_dir / f'n{i}.csv' for i in range(1, 6)])
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text('\n'.join(words) + '\n', encoding='utf-8')
+        print(f'Saved {len(words)} readings to {args.output}')
+    except (OSError, ValueError) as exc:
+        parser.exit(1, f'Error: {exc}\n')
+
+
+if __name__ == '__main__':
+    main()
